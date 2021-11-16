@@ -16,49 +16,51 @@ const (
 func main() {
 	fmt.Println("starting rabbitmq producer....")
 	conn, err := amqp.Dial("amqp://test:123456@172.16.0.156:5672/test")
-	if err != nil {
-		fmt.Println("rabbitmq dial failed : ", err.Error())
-	} else {
-		fmt.Println("rabbitmq dial succeed")
-	}
 
 	defer func() {
+		if r := recover(); r != nil {
+			if v, ok := r.(string); ok {
+				fmt.Print(v)
+			}
+			fmt.Print(r.(string))
+		}
 		fmt.Print("stopping producer....")
 		conn.Close()
 	}()
 
+	if err != nil {
+		panic("rabbitmq dial failed " + err.Error())
+	}
+	fmt.Println("rabbitmq dial succeed")
+
 	ch, err := conn.Channel()
 	if err != nil {
-		fmt.Println("rabbitmq connect failed : ", err.Error())
-	} else {
-		fmt.Println("rabbitmq connect succeed")
+		panic("rabbitmq connect failed : " + err.Error())
 	}
+	fmt.Println("rabbitmq connect succeed")
 
 	// EXCHANGE DECLARE
 	table := make(map[string]interface{})
 	table["x-delayed-type"] = "direct"
 	err = ch.ExchangeDeclare(EXCHANGE, "x-delayed-message", true, false, false, true, table)
 	if err != nil {
-		fmt.Println("declare exchange failed : ", err.Error())
-	} else {
-		fmt.Println("declare exchange succeed")
+		panic("declare exchange failed : " + err.Error())
 	}
+	fmt.Println("declare exchange succeed")
 
 	//QUEUE DECLARE
 	_, err = ch.QueueDeclare(QUEUE, true, false, false, true, make(map[string]interface{}))
 	if err != nil {
-		fmt.Println("declare queue failed : ", err.Error())
-	} else {
-		fmt.Println("declare queue succeed")
+		panic("declare queue failed : " + err.Error())
 	}
+	fmt.Println("declare queue succeed")
 
 	//BINGING DECLARE
 	err = ch.QueueBind(QUEUE, ROUTING_KEY, EXCHANGE, true, make(map[string]interface{}))
 	if err != nil {
-		fmt.Println("declare binding failed : ", err.Error())
-	} else {
-		fmt.Println("declare binding succeed")
+		panic("declare binding failed : " + err.Error())
 	}
+	fmt.Println("declare binding succeed")
 
 	for i := 0; i <= 10; i++ {
 		headers := make(map[string]interface{})
