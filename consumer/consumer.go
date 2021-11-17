@@ -14,28 +14,28 @@ const (
 
 func main() {
 	fmt.Println("starting rabbitmq consumer....")
-	conn, err := amqp.Dial("amqp://test:123456@172.16.0.156:5672/test")
+	conn, err := amqp.Dial("amqp://test:123456@172.16.10.156:5672/test")
 
 	defer func() {
 		if r := recover(); r != nil {
 			if v, ok := r.(string); ok {
 				fmt.Print(v)
+			} else {
+				fmt.Printf("error: %v", r)
 			}
-			fmt.Print(r.(string))
 		}
 		fmt.Print("stopping consumer....")
 		conn.Close()
 	}()
 
-
 	if err != nil {
-		panic("rabbitmq dial failed : "+ err.Error())
-	} 
+		panic("rabbitmq dial failed : " + err.Error())
+	}
 	fmt.Println("rabbitmq dial succeed")
 
 	ch, err := conn.Channel()
 	if err != nil {
-	panic("rabbitmq connect failed : "+err.Error())
+		panic("rabbitmq connect failed : " + err.Error())
 	}
 	fmt.Println("rabbitmq connect succeed")
 
