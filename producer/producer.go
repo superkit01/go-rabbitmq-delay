@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/streadway/amqp"
 )
@@ -62,17 +61,23 @@ func main() {
 	}
 	fmt.Println("declare binding succeed")
 
-	for i := 0; i <= 10; i++ {
+	for {
+		var msg string
+		fmt.Scan(&msg)
+		if msg == "exit" {
+			break
+		}
+
 		headers := make(map[string]interface{})
 		headers["x-delay"] = 5000
 		message := amqp.Publishing{
 			Headers: headers,
-			Body:    []byte("test" + strconv.Itoa(i)),
+			Body:    []byte(msg),
 		}
-		if err = ch.Publish(EXCHANGE, ROUTING_KEY, false, true, message); err != nil {
+		if err = ch.Publish(EXCHANGE, ROUTING_KEY, false, false, message); err != nil {
 			fmt.Println("send msg failed ", err.Error())
 		} else {
-			fmt.Println("send msg succeed ")
+			fmt.Println("send msg succeed :", msg)
 		}
 	}
 
